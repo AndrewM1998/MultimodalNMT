@@ -301,8 +301,8 @@ class Trainer(object):
                 report_stats.update(batch_stats)
 
                 # If truncated, don't backprop fully.
-                if dec_state is not None:
-                    dec_state.detach()
+                #if dec_state is not None:
+                   # dec_state.detach()
 
         if self.grad_accum_count > 1:
             self.optim.step()
