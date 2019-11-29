@@ -1,2 +1,4 @@
-FROM pytorch/pytorch:latest
-RUN git clone https://github.com/OpenNMT/OpenNMT-py.git && cd OpenNMT-py && pip install -r requirements.txt && python setup.py install
+FROM pytorch/pytorch:0.4.1-cuda9-cudnn7-devel
+WORKDIR /workspace
+COPY . /workspace
+RUN pip install -r requirements.txt
