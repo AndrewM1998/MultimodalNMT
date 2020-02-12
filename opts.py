@@ -209,6 +209,8 @@ def train_opts(parser):
     group.add_argument('-data', required=True,
                        help="""Path prefix to the ".train.pt" and
                        ".valid.pt" file path from preprocess.py""")
+    group.add_argument('-path_to_sentence_weights', required=True,
+                        help="""Path prefix to the weights file path""")
 
     group.add_argument('-save_model', default='model',
                        help="""Model filename (the model will be saved as

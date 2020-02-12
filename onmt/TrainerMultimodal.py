@@ -18,6 +18,7 @@ import torch.nn as nn
 import onmt
 import onmt.io
 import onmt.modules
+import numpy as np
 
 from onmt.Trainer import Statistics
 
@@ -47,7 +48,7 @@ class TrainerMultimodal(object):
     def __init__(self, model, train_loss, valid_loss, optim,
                  trunc_size=0, shard_size=32, data_type='text',
                  norm_method="sents", grad_accum_count=1,
-                 train_img_feats=None, valid_img_feats=None,
+                 train_img_feats=None, valid_img_feats=None, weights=None,
                  multimodal_model_type=None):
         # Basic attributes.
         self.model = model
@@ -61,6 +62,7 @@ class TrainerMultimodal(object):
         self.grad_accum_count = grad_accum_count
         self.train_img_feats = train_img_feats
         self.valid_img_feats = valid_img_feats
+        self.weights = weights
         self.multimodal_model_type = multimodal_model_type
 
         assert(not self.train_img_feats is None), \
@@ -107,7 +109,6 @@ class TrainerMultimodal(object):
         for i, batch in enumerate(train_iter):
             cur_dataset = train_iter.get_cur_dataset()
             self.train_loss.cur_dataset = cur_dataset
-
             true_batchs.append(batch)
             accum += 1
             if self.norm_method == "tokens":
@@ -238,6 +239,10 @@ class TrainerMultimodal(object):
         for batch in true_batchs:
             # extract indices for all entries in the mini-batch
             idxs = batch.indices.cpu().data.numpy()
+            sentence_weights = []
+            for x in np.nditer(idxs):
+                sentence_weights.append(self.weights[x])
+
             # load image features for this minibatch into a pytorch Variable
             img_feats = torch.from_numpy( self.train_img_feats[idxs] )
             img_feats = torch.autograd.Variable(img_feats, requires_grad=False)
@@ -285,6 +290,7 @@ class TrainerMultimodal(object):
                         batch, outputs, attns, j,
                         trunc_size, self.shard_size, normalization)
 
+                print(batch_stats)
                 # 4. Update the parameters and statistics.
                 if self.grad_accum_count == 1:
                     self.optim.step()
