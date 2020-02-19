@@ -63,6 +63,9 @@ class TextDataset(ONMTDatasetBase):
         ex, examples_iter = self._peek(examples_iter)
         keys = ex.keys()
 
+        if 'weights' in keys:
+            ex['weights'] = float(ex['weights'])
+
         out_fields = [(k, fields[k]) if k in fields else (k, None)
                       for k in keys]
         example_values = ([ex[k] for k in keys] for ex in examples_iter)
@@ -231,6 +234,8 @@ class TextDataset(ONMTDatasetBase):
         fields["indices"] = torchtext.data.Field(
             use_vocab=False, tensor_type=torch.LongTensor,
             sequential=False)
+
+        fields["weights"] = torchtext.data.Field(use_vocab=False, dtype=torch.long, sequential=False)
 
         return fields
 

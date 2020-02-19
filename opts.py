@@ -127,6 +127,8 @@ def preprocess_opts(parser):
                        help="Path to the training source data")
     group.add_argument('-train_tgt', required=True,
                        help="Path to the training target data")
+    group.add_argument('-path_to_sentence_weights', nargs='+', default=None,
+                        help="""Path to the training example sentence weights""")
     group.add_argument('-valid_src', required=True,
                        help="Path to the validation source data")
     group.add_argument('-valid_tgt', required=True,
@@ -209,8 +211,6 @@ def train_opts(parser):
     group.add_argument('-data', required=True,
                        help="""Path prefix to the ".train.pt" and
                        ".valid.pt" file path from preprocess.py""")
-    group.add_argument('-path_to_sentence_weights', required=True,
-                        help="""Path prefix to the weights file path""")
 
     group.add_argument('-save_model', default='model',
                        help="""Model filename (the model will be saved as
