@@ -215,7 +215,7 @@ def make_loss_compute(model, tgt_vocab, opt):
 
 
 def train_model(model, fields, optim, data_type,
-                train_img_feats, valid_img_feats, weights,
+                train_img_feats, valid_img_feats,
                 model_opt):
     train_loss = make_loss_compute(model, fields["tgt"].vocab, opt)
     valid_loss = make_loss_compute(model, fields["tgt"].vocab, opt)
@@ -230,7 +230,7 @@ def train_model(model, fields, optim, data_type,
                            train_loss, valid_loss,
                            optim, trunc_size, shard_size, data_type,
                            norm_method, grad_accum_count,
-                           train_img_feats, valid_img_feats, weights, multimodal_model_type)
+                           train_img_feats, valid_img_feats, multimodal_model_type)
 
     print('\nStart training...')
     print(' * number of epochs: %d, starting from Epoch %d' %
@@ -406,11 +406,6 @@ def main():
     train_file.close()
     valid_file.close()
 
-    sentenceWeights = []
-
-    with open(opt.path_to_sentence_weights, 'r') as fin:
-        sentenceWeights = fin.read().splitlines()
-
     # Load checkpoint if we resume from a previous training.
     if opt.train_from:
         print('Loading checkpoint from %s' % opt.train_from)
@@ -431,7 +426,6 @@ def main():
 
     # Load fields generated from preprocess phase.
     fields = load_fields(first_dataset, data_type, checkpoint)
-
     # Report src/tgt features.
     collect_report_features(fields)
 
@@ -445,7 +439,7 @@ def main():
 
     # Do training.
     train_model(model, fields, optim, data_type,
-                train_img_feats, valid_img_feats, sentenceWeights,
+                train_img_feats, valid_img_feats,
                 model_opt)
 
 

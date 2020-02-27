@@ -40,7 +40,7 @@ def parse_args():
     return opt
 
 
-def build_save_text_dataset_in_shards(src_corpus, tgt_corpus, fields,
+def build_save_text_dataset_in_shards(src_corpus, tgt_corpus, weights, fields,
                                       corpus_type, opt):
     '''
     Divide the big corpus into shards, and build dataset separately.
@@ -80,6 +80,7 @@ def build_save_text_dataset_in_shards(src_corpus, tgt_corpus, fields,
               '(shard_size = %d bytes).' % opt.max_shard_size)
 
     ret_list = []
+
     src_iter = onmt.io.ShardedTextCorpusIterator(
                 src_corpus, opt.src_seq_length_trunc,
                 "src", opt.max_shard_size)
@@ -88,12 +89,17 @@ def build_save_text_dataset_in_shards(src_corpus, tgt_corpus, fields,
                 "tgt", opt.max_shard_size,
                 assoc_iter=src_iter)
 
+    if weights is not None:
+        weights_iter = onmt.io.ShardedTextCorpusIterator(weights, 0, "weights", opt.max_shard_size, assoc_iter=src_iter)
+    else:
+        weights_iter = None
+
     index = 0
     while not src_iter.hit_end():
         index += 1
         dataset = onmt.io.TextDataset(
-                fields, src_iter, tgt_iter,
-                src_iter.num_feats, tgt_iter.num_feats,
+                fields, src_iter, tgt_iter, weights_iter,
+                src_iter.num_feats, tgt_iter.num_feats, 
                 src_seq_length=opt.src_seq_length,
                 tgt_seq_length=opt.tgt_seq_length,
                 dynamic_dict=opt.dynamic_dict)
@@ -117,14 +123,17 @@ def build_save_dataset(corpus_type, fields, opt):
     if corpus_type == 'train':
         src_corpus = opt.train_src
         tgt_corpus = opt.train_tgt
+        weights = opt.sentence_weights if opt.sentence_weights is not None \
+            else [None]*len(opt.train_src)
     else:
         src_corpus = opt.valid_src
         tgt_corpus = opt.valid_tgt
+        weights = None
 
     # Currently we only do preprocess sharding for corpus: data_type=='text'.
     if opt.data_type == 'text':
         return build_save_text_dataset_in_shards(
-                src_corpus, tgt_corpus, fields,
+                src_corpus, tgt_corpus, weights, fields,
                 corpus_type, opt)
 
     # For data_type == 'img' or 'audio', currently we don't do

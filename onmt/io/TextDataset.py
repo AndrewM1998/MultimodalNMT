@@ -34,23 +34,24 @@ class TextDataset(ONMTDatasetBase):
             use_filter_pred (bool): use a custom filter predicate to filter
                 out examples?
     """
-    def __init__(self, fields, src_examples_iter, tgt_examples_iter,
+    def __init__(self, fields, src_examples_iter, tgt_examples_iter, weights_iter,
                  num_src_feats=0, num_tgt_feats=0,
                  src_seq_length=0, tgt_seq_length=0,
                  dynamic_dict=True, use_filter_pred=True):
         self.data_type = 'text'
-
         # self.src_vocabs: mutated in dynamic_dict, used in
         # collapse_copy_scores and in Translator.py
         self.src_vocabs = []
 
         self.n_src_feats = num_src_feats
         self.n_tgt_feats = num_tgt_feats
-
         # Each element of an example is a dictionary whose keys represents
         # at minimum the src tokens and their indices and potentially also
         # the src and tgt features and alignment information.
-        if tgt_examples_iter is not None:
+        if weights_iter is not None:
+            examples_iter = (self._join_dicts(src, tgt, weights) for src, tgt, weights in
+                             zip(src_examples_iter, tgt_examples_iter, weights_iter))
+        elif tgt_examples_iter is not None:
             examples_iter = (self._join_dicts(src, tgt) for src, tgt in
                              zip(src_examples_iter, tgt_examples_iter))
         else:
@@ -63,12 +64,10 @@ class TextDataset(ONMTDatasetBase):
         ex, examples_iter = self._peek(examples_iter)
         keys = ex.keys()
 
-        if 'weights' in keys:
-            ex['weights'] = float(ex['weights'])
-
         out_fields = [(k, fields[k]) if k in fields else (k, None)
                       for k in keys]
-        example_values = ([ex[k] for k in keys] for ex in examples_iter)
+        example_values = ([float(ex[k][0]) if k == 'weights' else ex[k] for k in keys] for ex in examples_iter)
+
         out_examples = (self._construct_example_fromlist(
                             ex_values, out_fields)
                         for ex_values in example_values)
@@ -235,7 +234,7 @@ class TextDataset(ONMTDatasetBase):
             use_vocab=False, tensor_type=torch.LongTensor,
             sequential=False)
 
-        fields["weights"] = torchtext.data.Field(use_vocab=False, dtype=torch.long, sequential=False)
+        fields["weights"] = torchtext.data.Field(use_vocab=False, tensor_type=torch.DoubleTensor, sequential=False)
 
         return fields
 

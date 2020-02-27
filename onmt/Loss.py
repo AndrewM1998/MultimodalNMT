@@ -120,7 +120,7 @@ class LossComputeBase(nn.Module):
 
         for shard in shards(shard_state, shard_size):
             loss, stats = self._compute_loss(batch, **shard)
-
+            #rint(loss)
             loss.div(normalization).backward(retain_graph=True)
             batch_stats.update(stats)
 
@@ -183,9 +183,18 @@ class NMTLossCompute(LossComputeBase):
             "target": batch.tgt[range_[0] + 1: range_[1]],
         }
 
+    def _weighted_sum(self, loss, weights):
+        if weights is None:
+            weights = torch.ones(loss.size()).to(loss.device)
+        weights = weights.float().to(loss.device)
+        #print(weights)
+        weighted_sum = (loss * weights).sum()
+        return weighted_sum
+    
     def _compute_loss(self, batch, output, target):
         scores = self.generator(self._bottle(output))
 
+        print(scores)
         gtruth = target.view(-1)
         if self.confidence < 1:
             tdata = gtruth.data
@@ -199,11 +208,25 @@ class NMTLossCompute(LossComputeBase):
             gtruth = Variable(tmp_, requires_grad=False)
 
         loss = self.criterion(scores, gtruth)
+        print(loss)
+
         if self.confidence < 1:
             loss_data = - likelihood.sum(0)
         else:
             loss_data = loss.data.clone()
 
+        
+        if hasattr(batch, 'weights'):
+            #print(batch.weights)
+            weights = batch.weights.unsqueeze(0).expand(target.size(0), -1)
+            weights = weights.contiguous().view(-1)
+            weighted_loss = self._weighted_sum(loss_data, weights)
+            #print(weighted_loss)
+            loss_data = weighted_loss
+        else:
+            loss_data = loss.sum()
+
+        #print(loss_data)
         stats = self._stats(loss_data, scores.data, target.view(-1).data)
 
         return loss, stats

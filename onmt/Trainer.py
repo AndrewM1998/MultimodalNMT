@@ -45,6 +45,7 @@ class Statistics(object):
         return 100 * (self.n_correct / self.n_words)
 
     def ppl(self):
+        print('PPL Loss', self.loss)
         return math.exp(min(self.loss / self.n_words, 100))
 
     def elapsed_time(self):
