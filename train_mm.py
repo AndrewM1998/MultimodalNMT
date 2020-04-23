@@ -167,10 +167,11 @@ class DatasetLazyIter(object):
 
         # Sort batch by decreasing lengths of sentence required by pytorch.
         # sort=False means "Use dataset's sortkey instead of iterator's".
+        dev = torch.device("cuda:" + str(self.device))
         return onmt.io.OrderedIterator(
             dataset=self.cur_dataset, batch_size=self.batch_size,
             batch_size_fn=self.batch_size_fn,
-            device=self.device, train=self.is_train,
+            device=dev, train=self.is_train,
             sort=False, sort_within_batch=True,
             repeat=False)
 
@@ -189,7 +190,6 @@ def make_dataset_iter(datasets, fields, opt, is_train=True):
             return sofar + max(len(new.tgt), len(new.src)) + 1
 
     device = opt.gpuid[0] if opt.gpuid else -1
-
     return DatasetLazyIter(datasets, fields, batch_size, batch_size_fn,
                            device, is_train)
 
