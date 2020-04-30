@@ -76,8 +76,13 @@ def main():
 
     # Sort batch by decreasing lengths of sentence required by pytorch.
     # sort=False means "Use dataset's sortkey instead of iterator's".
+    if opt.gpu >= 0:
+        devStr = "cuda:" + str(opt.gpu)
+        compDev = torch.device(devStr)
+    else:
+        compDev = torch.device("cpu")
     data_iter = onmt.io.OrderedIterator(
-        dataset=data, device=opt.gpu,
+        dataset=data, device=compDev,
         batch_size=opt.batch_size, train=False, sort=False,
         sort_within_batch=True, shuffle=False)
 
