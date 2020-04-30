@@ -127,6 +127,8 @@ def preprocess_opts(parser):
                        help="Path to the training source data")
     group.add_argument('-train_tgt', required=True,
                        help="Path to the training target data")
+    group.add_argument('-sentence_weights', default=None, action=CastNone
+                        help="""Path to the training example sentence weights""")
     group.add_argument('-valid_src', required=True,
                        help="Path to the validation source data")
     group.add_argument('-valid_tgt', required=True,
@@ -530,6 +532,16 @@ class MarkdownHelpAction(argparse.Action):
         parser.print_help()
         parser.exit()
 
+class CastNone(configargparse.Action):
+    def __init__(self, option_strings, dest, help=None, **kwargs):
+        super(CastNone, self).__init__(
+            option_strings, dest, help=help, **kwargs)
+
+    def __call__(self, parser, namespace, value, option_string=None):
+        for i, item in enumerate(value):
+            if item.lower() == "none":
+                value[i] = None
+        setattr(namespace, self.dest, value)
 
 class DeprecateAction(argparse.Action):
     def __init__(self, option_strings, dest, help=None, **kwargs):
