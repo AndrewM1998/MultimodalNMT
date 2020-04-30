@@ -1,6 +1,8 @@
 import argparse
 from onmt.modules.SRU import CheckSRU
 
+import configargparse
+
 
 def model_opts(parser):
     """
@@ -127,7 +129,7 @@ def preprocess_opts(parser):
                        help="Path to the training source data")
     group.add_argument('-train_tgt', required=True,
                        help="Path to the training target data")
-    group.add_argument('-sentence_weights', default=None, action=CastNone
+    group.add_argument('-sentence_weights', default=None, action=CastNone,
                         help="""Path to the training example sentence weights""")
     group.add_argument('-valid_src', required=True,
                        help="Path to the validation source data")
