@@ -88,7 +88,8 @@ def build_save_text_dataset_in_shards(src_corpus, tgt_corpus, weights, fields,
                 "tgt", opt.max_shard_size,
                 assoc_iter=src_iter)
 
-    if weights is not None:
+    print(weights)
+    if weights[0] is not None:
         weights_iter = onmt.io.ShardedTextCorpusIterator(weights, 0, "weights", opt.max_shard_size, assoc_iter=src_iter)
     else:
         weights_iter = None
@@ -127,7 +128,7 @@ def build_save_dataset(corpus_type, fields, opt):
     else:
         src_corpus = opt.valid_src
         tgt_corpus = opt.valid_tgt
-        weights = None
+        weights = [None]
 
     # Currently we only do preprocess sharding for corpus: data_type=='text'.
     if opt.data_type == 'text':

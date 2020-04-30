@@ -183,6 +183,17 @@ class NMTLossCompute(LossComputeBase):
             "target": batch.tgt[range_[0] + 1: range_[1]],
         }
 
+    def _weighted_sum(self, loss, weights):
+        """
+        Custom reduction for loss, based on a specific weight for
+        each example in batch.
+        """
+        if weights is None:
+            weights = torch.ones(loss.size()).to(loss.device)
+        weights = weights.float().to(loss.device)
+        weighted_sum = (loss * weights).sum()
+        return weighted_sum
+
     def _compute_loss(self, batch, output, target):
         scores = self.generator(self._bottle(output))
 
@@ -203,6 +214,15 @@ class NMTLossCompute(LossComputeBase):
             loss_data = - likelihood.sum(0)
         else:
             loss_data = loss.data.clone()
+    
+      #  if hasattr(batch, 'weights'):
+       #     #print(batch.weights)
+        #    weights = batch.weights.unsqueeze(0).expand(target.size(0), -1)
+         ##  weighted_loss = self._weighted_sum(loss_data, weights)
+            #print(weighted_loss)
+           # loss_data = weighted_loss
+        #else:
+         #   loss_data = loss.sum()
 
         stats = self._stats(loss_data, scores.data, target.view(-1).data)
 
