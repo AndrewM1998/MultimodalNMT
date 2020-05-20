@@ -19,8 +19,8 @@ Table of Contents
 ## Requirements
 
 ```
-torchtext>=0.2.1
-pytorch>=0.2
+torchtext>=0.6.0
+pytorch>=1.0.0
 ```
 
 In case one of the two are missing or not up-to-date and assuming you installed pytorch using the conda package manager and torchtext using pip, you might want to run the following:
@@ -54,6 +54,7 @@ Beta Features (committed):
 - [Conv2Conv convolution model]
 - SRU "RNNs faster than CNN" paper
 - Inference time loss functions.
+- Incorporating sentence weights into training dataset
 
 ## Multi-modal NMT Quickstart
 
