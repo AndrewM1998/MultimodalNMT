@@ -174,7 +174,7 @@ class NMTLossCompute(LossComputeBase):
         else:
             weight = torch.ones(len(tgt_vocab))
             weight[self.padding_idx] = 0
-            self.criterion = nn.NLLLoss(weight, size_average=False)
+            self.criterion = nn.NLLLoss(weight, reduction='none')
         self.confidence = 1.0 - label_smoothing
 
     def _make_shard_state(self, batch, output, range_, attns=None):
@@ -199,6 +199,7 @@ class NMTLossCompute(LossComputeBase):
 
         gtruth = target.view(-1)
         if self.confidence < 1:
+            print("Self Confidence < 1")
             tdata = gtruth.data
             mask = torch.nonzero(tdata.eq(self.padding_idx)).squeeze()
             likelihood = torch.gather(scores.data, 1, tdata.unsqueeze(1))
@@ -210,19 +211,18 @@ class NMTLossCompute(LossComputeBase):
             gtruth = Variable(tmp_, requires_grad=False)
 
         loss = self.criterion(scores, gtruth)
+        if hasattr(batch, "weights"):
+            weights = batch.weights.unsqueeze(0).expand(target.size(0), -1)
+            weights = weights.contiguous().view(-1)
+            weighted_loss = self._weighted_sum(loss, weights)
+            loss = weighted_loss
+        else:
+            loss = loss.sum()
+
         if self.confidence < 1:
             loss_data = - likelihood.sum(0)
         else:
             loss_data = loss.data.clone()
-    
-      #  if hasattr(batch, 'weights'):
-       #     #print(batch.weights)
-        #    weights = batch.weights.unsqueeze(0).expand(target.size(0), -1)
-         ##  weighted_loss = self._weighted_sum(loss_data, weights)
-            #print(weighted_loss)
-           # loss_data = weighted_loss
-        #else:
-         #   loss_data = loss.sum()
 
         stats = self._stats(loss_data, scores.data, target.view(-1).data)
 

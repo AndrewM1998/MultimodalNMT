@@ -88,7 +88,6 @@ def build_save_text_dataset_in_shards(src_corpus, tgt_corpus, weights, fields,
                 "tgt", opt.max_shard_size,
                 assoc_iter=src_iter)
 
-    print(weights)
     if weights[0] is not None:
         weights_iter = onmt.io.ShardedTextCorpusIterator(weights, 0, "weights", opt.max_shard_size, assoc_iter=src_iter)
     else:
