@@ -27,7 +27,7 @@ class TextDataset(ONMTDatasetBase):
             tgt_examples_iter (dict iter): preprocessed target example
                 dictionary iterator.
             num_src_feats (int): number of source side features.
-            num_tgt_feats (int): number of target side features.
+            num_tgt_feats (int): number of target side features. 
             src_seq_length (int): maximum source sequence length.
             tgt_seq_length (int): maximum target sequence length.
             dynamic_dict (bool): create dynamic dictionaries?
@@ -235,7 +235,7 @@ class TextDataset(ONMTDatasetBase):
             use_vocab=False, dtype=torch.long,
             sequential=False)
 
-        fields["weights"] = torchtext.data.Field(use_vocab=False, dtype=torch.long, sequential=False)
+        fields["weights"] = torchtext.data.Field(use_vocab=False, dtype=torch.float, sequential=False)
         
         return fields
 

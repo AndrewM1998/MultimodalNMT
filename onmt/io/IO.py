@@ -190,7 +190,7 @@ def build_dataset(fields, data_type, src_path, tgt_path, src_dir=None,
             tgt_path, tgt_seq_length_trunc, "tgt")
 
     if data_type == 'text':
-        dataset = TextDataset(fields, src_examples_iter, tgt_examples_iter,
+        dataset = TextDataset(fields, src_examples_iter, tgt_examples_iter, None,
                               num_src_feats, num_tgt_feats,
                               src_seq_length=src_seq_length,
                               tgt_seq_length=tgt_seq_length,
