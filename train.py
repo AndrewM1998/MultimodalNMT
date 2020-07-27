@@ -198,7 +198,7 @@ def make_loss_compute(model, tgt_vocab, opt):
     return compute
 
 
-def train_model(model, fields, optim, data_type, model_opt):
+def train_model(model, fields, valid_fields, optim, data_type, model_opt):
     train_loss = make_loss_compute(model, fields["tgt"].vocab, opt)
     valid_loss = make_loss_compute(model, fields["tgt"].vocab, opt)
 
@@ -228,7 +228,7 @@ def train_model(model, fields, optim, data_type, model_opt):
 
         # 2. Validate on the validation set.
         valid_iter = make_dataset_iter(lazily_load_dataset("valid"),
-                                       fields, opt,
+                                       valid_fields, opt,
                                        is_train=False)
         valid_stats = trainer.validate(valid_iter)
         print('Validation perplexity: %g' % valid_stats.ppl())
@@ -382,9 +382,12 @@ def main():
     first_dataset = next(lazily_load_dataset("train"))
     data_type = first_dataset.data_type
 
+    second_dataset = next(lazily_load_dataset("valid"))
+    second_data_type = second_dataset.data_type
+
     # Load fields generated from preprocess phase.
     fields = load_fields(first_dataset, data_type, checkpoint)
-
+    valid_fields = load_fields(second_dataset, second_data_type, checkpoint)
     # Report src/tgt features.
     collect_report_features(fields)
 
@@ -397,7 +400,7 @@ def main():
     optim = build_optim(model, checkpoint)
 
     # Do training.
-    train_model(model, fields, optim, data_type, model_opt)
+    train_model(model, fields, valid_fields, optim, data_type, model_opt)
 
 
 if __name__ == "__main__":
