@@ -187,6 +187,9 @@ class NMTLossCompute(LossComputeBase):
         """
         Custom reduction for loss, based on a specific weight for
         each example in batch.
+        
+        This function is an implementation of user francoishernandez's OpenNMT commit found here:
+        https://github.com/OpenNMT/OpenNMT-py/pull/1438
         """
         if weights is None:
             weights = torch.ones(loss.size()).to(loss.device)
